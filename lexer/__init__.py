@@ -131,12 +131,9 @@ def build_regex(enhanced_parsing=True, debug=0, **flags):
         re.compile(re_alphanumeric_items, re_flags)
         print
 
-    if enhanced_parsing or flags.get('enhanced_comments', False):
-        re_comment = ('NB.'
-                      '[^)]*')
-    else:
-        re_comment = ('NB\.'
-                      '.*')
+    re_comment = ('NB.'
+                  '.*')
+
     # If NB. is encountered, eat everything until eol.
     #
     # return '|'.join('({})'.format(item)
