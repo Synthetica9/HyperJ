@@ -1,3 +1,20 @@
+# Copyright 2015 Patrick Hilhorst
+#
+# This file is part of HyperJ.
+#
+# HyperJ is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# HyperJ is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with HyperJ.  If not, see <http://www.gnu.org/licenses/>.
+
 __author__ = 'Synthetica'
 import re
 import string
@@ -26,14 +43,6 @@ def build_regex(enhanced_parsing=True, debug=0, **flags):
     else:
         non_sticking_tokens = "[']"  # "'':" has ["''", ':'] as result.
     sticking_chars = '[:\.]'
-
-    # regular_chars = re.escape(
-    # ''.join(  # TODO: string.printable is derived from string.punctuation.
-    # set(string.punctuation)
-    # - set(non_sticking_tokens)
-    # - set(sticking_chars)
-    #     )
-    # )
 
     regular_chars = '[{}]'.format(
         re.escape(
@@ -131,11 +140,27 @@ def build_regex(enhanced_parsing=True, debug=0, **flags):
         re.compile(re_alphanumeric_items, re_flags)
         print
 
-    re_comment = ('NB.'
-                  '.*')
-
+    re_comment = (r'NB\.'
+                  r'.*')
     # If NB. is encountered, eat everything until eol.
-    #
+    if debug >= 3:
+        print 'Regex for comments:'
+        print re_comment
+        re.compile(re_comment, re_flags)
+        print
+
+    re_directive = r'@\.:[^)]*'
+    # When encountering an directive statement (that's what they are called for
+    # now), eat everything until the next close paren (that is totally allowed
+    # to never come)
+
+
+    if debug >= 3:
+        print 'Regex for directive statements:'
+        print re_directive
+        re.compile(re_directive, re_flags)
+        print
+
     # return '|'.join('({})'.format(item)
     #                 for item in (
     #     re_names,
@@ -144,20 +169,25 @@ def build_regex(enhanced_parsing=True, debug=0, **flags):
     #     re_regular_items,
     #     re_string
     # ))
-    return '|'.join((
+    return (
         re_names,
+        re_directive,
         re_number_group,
         re_alphanumeric_items,
-        re_regular_items,
         re_string,
-        re_comment
-    ))
+        re_comment,
+        re_directive,
+        re_regular_items
+    )
 
 def lexer(code, debug=0, **flags):
-    regex = build_regex(**flags)
+    regexes = build_regex(debug=debug, **flags)
+    # This might seem wasteful, but it does allow for the rebuilding of the
+    # regex with different flags.
     if debug >= 2:
         print 'Using following regex to parse:'
-        print regex
+        for regex in regexes:
+            print regex
         print
 
     returnlist = []
@@ -172,12 +202,15 @@ def lexer(code, debug=0, **flags):
             raise LexerException('Unclosed quote!')
         while line:
             line = line.strip()
-            match = re.match(regex, line)
-            if match:
-                tmpreturn.append(match.group())
-                line = line[match.end():]
+            for regex in regexes:
+                match = re.match(regex, line)
+                if match:
+                    tmpreturn.append(match.group())
+                    line = line[match.end():]
+                    break
+
             else:
-                raise LexerException
+                raise LexerException('Unknown token')
         returnlist.append(tmpreturn)
         if debug >= 7:
             print 'Line parsed to:'
@@ -185,7 +218,6 @@ def lexer(code, debug=0, **flags):
             print
 
     return returnlist
-
 
 
 if __name__ == '__main__':
