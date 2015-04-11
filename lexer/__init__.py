@@ -161,14 +161,6 @@ def build_regex(enhanced_parsing=True, debug=0, **flags):
         re.compile(re_directive, re_flags)
         print
 
-    # return '|'.join('({})'.format(item)
-    #                 for item in (
-    #     re_names,
-    #     re_number_group,
-    #     re_alphanumeric_items,
-    #     re_regular_items,
-    #     re_string
-    # ))
     return (
         re_names,
         re_directive,
@@ -178,6 +170,7 @@ def build_regex(enhanced_parsing=True, debug=0, **flags):
         re_comment,
         re_directive,
         re_regular_items
+        # The order here is important.
     )
 
 def lexer(code, debug=0, **flags):
