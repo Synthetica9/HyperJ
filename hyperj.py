@@ -36,8 +36,8 @@ def main():
         raw_code = open(args.infile).read()
         lexed = lexer.lexer(raw_code, **flags)
 
-        import solve_parrens
-        solved = solve_parrens.solve_parrens(lexed, **flags)
+        import dissecter
+        solved = dissecter.parser(lexed, **flags)
         if args.outfile == 'stdout':
             outfile = sys.stdout
         else:

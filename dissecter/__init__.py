@@ -14,12 +14,41 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with HyperJ.  If not, see <http://www.gnu.org/licenses/>.
+from errors import ParserException
+import variablegenerator
 
 __author__ = 'Synthetica'
 
 import tools
-import variablegenerator
-from errors import ParserException
+
+def single_assignment(lexed, **flags):
+    debug = flags['debug']
+    result = []
+    for line in lexed:
+        while ('=.' in line) or ('=:' in line):
+            try:
+                global_index = tools.rindex(line, '=:')
+            except ValueError:
+                global_index = -1
+
+            try:
+                local_index = tools.rindex(line, '=.')
+            except ValueError:
+                local_index = -1
+
+            assignment_index = max(global_index, local_index)
+            if assignment_index == -1:
+                raise ValueError()
+
+            if assignment_index == 1:  # Second item
+                break
+
+            result.append(line[assignment_index-1:])
+            line = line[:assignment_index]
+        result.append(line if '=.' in line or '=:' in line
+                      else ['print.']+line)
+    return result
+
 
 def solve_parrens(lexed, **flags):
     debug = flags['debug']
@@ -60,5 +89,8 @@ def solve_parrens(lexed, **flags):
         result.append(line)
     return result
 
-if __name__ == '__main__':
-    print solve_parrens([['a', '(', 'b', ')', 'c']], debug=10)
+
+def parser(lexed, **flags):
+    lexed = solve_parrens(lexed, **flags)
+    lexed = single_assignment(lexed, **flags)
+    return lexed
