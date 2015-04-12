@@ -19,6 +19,7 @@ __author__ = 'Synthetica'
 import re
 import string
 
+import tools
 from errors import LexerException
 # TODO: neater input of regular_chars (hardcoded?)
 # TODO: all things as character groups (more compact regexes)
@@ -26,7 +27,8 @@ from errors import LexerException
 # TODO: @.: directive statements
 # TODO: Enhanced comments
 
-def build_regex(enhanced_parsing=True, debug=0, **flags):
+def build_regex(**flags):
+    debug = flags['debug']
     re_flags = (re.DEBUG if debug >= 6 else 0)
 
     # letters = string.ascii_letters
@@ -37,7 +39,7 @@ def build_regex(enhanced_parsing=True, debug=0, **flags):
     # Not very portable, but better than taking string.whitespace and manually
     # removing everything that we don't want.
 
-    if enhanced_parsing:
+    if flags.get('enhanced_parsing', True):
         non_sticking_tokens = "['()]"
         # Signals (: and ): as a special case, with 2 separate tokens.
     else:
@@ -54,10 +56,26 @@ def build_regex(enhanced_parsing=True, debug=0, **flags):
             )
         )
     )
-    if debug >= 3:
+    if debug >= 4:
         print 'Regular chars:'
         print regular_chars
         print
+
+    re_directive = r'@\.:[^)]*'
+    # When encountering an directive statement (that's what they are called for
+    # now), eat everything until the next close paren (that is totally allowed
+    # to never come)
+
+    if debug >= 3:
+        print 'Regex for directive statements:'
+        print re_directive
+        re.compile(re_directive, re_flags)
+        print
+
+    yield re_directive
+
+    # ===========================================================
+
 
     re_names = ('{letters}'
                 # A name has to start with a letter (no underscores allowed)
@@ -74,6 +92,10 @@ def build_regex(enhanced_parsing=True, debug=0, **flags):
         re.compile(re_names, re_flags)
         print
 
+    yield re_names
+
+    # ===========================================================
+
     re_string = ("'"
                  # Opening quote
                  "(?:[^']|'')*"
@@ -88,6 +110,10 @@ def build_regex(enhanced_parsing=True, debug=0, **flags):
         print re_string
         re.compile(re_string, re_flags)
         print
+
+    yield re_string
+
+    # ===========================================================
 
     re_single_number = ('(?:'
                         # Start a non-capturing group
@@ -119,6 +145,10 @@ def build_regex(enhanced_parsing=True, debug=0, **flags):
         re.compile(re_number_group, re_flags)
         print
 
+    yield re_number_group
+
+    # ===========================================================
+
     re_regular_items = ('{regular_chars}'
                         '{sticking_chars}*'
                         ).format(**locals())
@@ -128,6 +158,9 @@ def build_regex(enhanced_parsing=True, debug=0, **flags):
         print re_regular_items
         re.compile(re_regular_items, re_flags)
         print
+
+    yield re_regular_items
+    # ===========================================================
 
     re_alphanumeric_items = ('(?:'
                              '{digits}|{letters}'
@@ -140,6 +173,10 @@ def build_regex(enhanced_parsing=True, debug=0, **flags):
         re.compile(re_alphanumeric_items, re_flags)
         print
 
+    yield re_alphanumeric_items
+
+    # ===========================================================
+
     re_comment = (r'NB\.'
                   r'.*')
     # If NB. is encountered, eat everything until eol.
@@ -149,32 +186,20 @@ def build_regex(enhanced_parsing=True, debug=0, **flags):
         re.compile(re_comment, re_flags)
         print
 
-    re_directive = r'@\.:[^)]*'
-    # When encountering an directive statement (that's what they are called for
-    # now), eat everything until the next close paren (that is totally allowed
-    # to never come)
+    yield re_comment
 
 
-    if debug >= 3:
-        print 'Regex for directive statements:'
-        print re_directive
-        re.compile(re_directive, re_flags)
-        print
 
-    return (
-        re_names,
-        re_directive,
-        re_number_group,
-        re_alphanumeric_items,
-        re_string,
-        re_comment,
-        re_directive,
-        re_regular_items
-        # The order here is important.
-    )
+    if flags.get('enhanced_parsing', True):
+        re_parens = r'[()]'
+        yield re_parens
 
-def lexer(code, debug=0, **flags):
-    regexes = build_regex(debug=debug, **flags)
+    # ===========================================================
+
+
+def lexer(code, **flags):
+    debug = flags.get('debug')
+    regexes = list(build_regex(**flags))
     # This might seem wasteful, but it does allow for the rebuilding of the
     # regex with different flags.
     if debug >= 2:

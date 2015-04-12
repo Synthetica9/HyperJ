@@ -19,3 +19,6 @@ __author__ = 'Synthetica'
 
 class LexerException(Exception):
     pass
+
+class ParserException(Exception):
+    pass
