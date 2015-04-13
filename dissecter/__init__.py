@@ -14,12 +14,15 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with HyperJ.  If not, see <http://www.gnu.org/licenses/>.
-from errors import ParserException
-import variablegenerator
 
 __author__ = 'Synthetica'
 
+import json
+import string
+
+import variablegenerator
 import tools
+from errors import ParserException
 
 def single_assignment(lexed, **flags):
     debug = flags['debug']
@@ -45,6 +48,10 @@ def single_assignment(lexed, **flags):
 
             result.append(line[assignment_index-1:])
             line = line[:assignment_index]
+            if debug >= 7:
+                print 'Line is now:'
+                print line
+                print
         result.append(line if '=.' in line or '=:' in line
                       else ['print.']+line)
     return result
@@ -72,10 +79,21 @@ def solve_parrens(lexed, **flags):
             matching_close_parren = (line[last_open_parren:].index(')')
                                      + last_open_parren)
             contents = line[last_open_parren+1:matching_close_parren]
+            if not any(i.startswith('@.:') for i in contents):
+                directives = [i.startswith('@.:')
+                              for i in line[matching_close_parren:]]
+                if any(directives):
+                    contents += [line[matching_close_parren:]
+                                     [directives.index(True)]]
+                    if debug >= 5:
+                        print 'Found directive statement, adding to line'
+                        print 'Contents are now:'
+                        print contents
+                        print
             varname = generator.next()
             prevline = [varname, '=.'] + contents
             if debug >= 6:
-                print 'parren contents:'
+                print 'Parren contents:'
                 print prevline
                 print
             result.append(prevline)
@@ -88,6 +106,7 @@ def solve_parrens(lexed, **flags):
                 print
         result.append(line)
     return result
+
 
 
 def parser(lexed, **flags):

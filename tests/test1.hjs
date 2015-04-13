@@ -1,6 +1,7 @@
 a =: 123
 b =: 123
-c =: a + b @.: GPU
+] c =: a + b @.: GPU
 xyz =: (a * b) + c
+((a + b @.: CPU) % (xyz * c)) @.: GPU
 x=.1
-(x=.>:x),(x=.>:x),x=.>:x
+(x=.>:x),(x=.>:x),(x=.>:x)

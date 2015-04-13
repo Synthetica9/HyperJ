@@ -1,0 +1,61 @@
+{
+  "+": {
+    "type": "verb",
+    "monad": {
+      "pure": true
+    },
+    "dyad": {
+      "pure": true,
+      "commutative": true
+    }
+  },
+  "*": {
+    "type": "verb",
+    "monad": {
+      "pure": true
+    },
+    "dyad": {
+      "pure": true,
+      "commutative": true
+    }
+  },
+  "-": {
+    "type": "verb",
+    "monad": {
+      "pure": true
+    },
+    "dyad": {
+      "pure": true,
+      "commutative": false
+    }
+  },
+  "%": {
+    "type": "verb",
+    "monad": {
+      "pure": true
+    },
+    "dyad": {
+      "pure": true,
+      "commutative": false
+    }
+  },
+  "?": {
+    "type": "verb",
+    "monad": {
+      "pure": false
+    },
+    "dyad": {
+      "pure": true,
+      "commutative": false
+    }
+  },
+  "/": {
+    "type": "adverb"
+  },
+  "\\.": {
+    "type": "adverb"
+  },
+  "@:": {
+    "type": "conjunction"
+  }
+}

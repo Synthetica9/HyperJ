@@ -32,7 +32,8 @@ parser.add_argument('--debug', '-d', metavar='L', type=int, default=0,
                     help='Set the debug level, on a scale from 0 to 10. '
                          'A higher number means more (potentially useless) '
                          'output. Defaults to 0, meaning there will not be '
-                         'any debug output.')
+                         'any debug output. This will not change the code'
+                         'output, only the output on stdout.')
 parser.add_argument('--standard-parsing', action='store_false',
                     dest='enhanced-parsing',
                     help='Use a parser closer to J\'s standard parser; '
