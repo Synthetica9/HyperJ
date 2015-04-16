@@ -52,8 +52,8 @@ def single_assignment(lexed, **flags):
                 print 'Line is now:'
                 print line
                 print
-        result.append(line if '=.' in line or '=:' in line
-                      else ['print.']+line)
+        result.append(line) #if '=.' in line or '=:' in line
+        #             else ['print.']+line)
     return result
 
 

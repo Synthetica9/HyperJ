@@ -57,5 +57,14 @@
   },
   "@:": {
     "type": "conjunction"
+  },
+  "a.": {
+    "type": "noun"
+  },
+  "=.": {
+    "type": "assign"
+  },
+  "=:":{
+    "type": "assign"
   }
 }

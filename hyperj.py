@@ -38,13 +38,17 @@ def main():
 
         import dissecter
         solved = dissecter.parser(lexed, **flags)
+
+        import semi_assembly_generator
+        semi_assembly = semi_assembly_generator.single_op(solved, **flags)
+
         if args.outfile == 'stdout':
             outfile = sys.stdout
         else:
             if args.outfile is None:
                 args.outfile = args.infile + '.out'
             outfile = open(args.outfile, 'w')
-        outfile.write('\n'.join(map(str, solved)))
+        outfile.write('\n'.join(map(str, semi_assembly)))
         # TODO: make sure the names here don't overlap
         # There are 2 conceivable solutions for this:
         # 1. change the names of the input, by adding a prefix

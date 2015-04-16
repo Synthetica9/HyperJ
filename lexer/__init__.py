@@ -61,6 +61,8 @@ def build_regex(**flags):
         print regular_chars
         print
 
+    # ===========================================================
+
     re_directive = r'@\.:[^)]*'
     # When encountering an directive statement (that's what they are called for
     # now), eat everything until the next close paren (that is totally allowed
@@ -72,7 +74,7 @@ def build_regex(**flags):
         re.compile(re_directive, re_flags)
         print
 
-    yield re_directive
+    yield 'directive', re_directive
 
     # ===========================================================
 
@@ -92,7 +94,7 @@ def build_regex(**flags):
         re.compile(re_names, re_flags)
         print
 
-    yield re_names
+    yield 'name', re_names
 
     # ===========================================================
 
@@ -111,7 +113,7 @@ def build_regex(**flags):
         re.compile(re_string, re_flags)
         print
 
-    yield re_string
+    yield 'noun', re_string
 
     # ===========================================================
 
@@ -145,7 +147,7 @@ def build_regex(**flags):
         re.compile(re_number_group, re_flags)
         print
 
-    yield re_number_group
+    yield 'noun', re_number_group
 
     # ===========================================================
 
@@ -159,7 +161,7 @@ def build_regex(**flags):
         re.compile(re_regular_items, re_flags)
         print
 
-    yield re_regular_items
+    yield 'item', re_regular_items
     # ===========================================================
 
     re_alphanumeric_items = ('(?:'
@@ -173,7 +175,7 @@ def build_regex(**flags):
         re.compile(re_alphanumeric_items, re_flags)
         print
 
-    yield re_alphanumeric_items
+    yield 'item', re_alphanumeric_items
 
     # ===========================================================
 
@@ -186,20 +188,20 @@ def build_regex(**flags):
         re.compile(re_comment, re_flags)
         print
 
-    yield re_comment
+    yield 'comment', re_comment
 
 
 
     if flags.get('enhanced_parsing', True):
         re_parens = r'[()]'
-        yield re_parens
+        yield 'parren', re_parens
 
     # ===========================================================
 
 
 def lexer(code, **flags):
     debug = flags.get('debug')
-    regexes = list(build_regex(**flags))
+    types, regexes = zip(*build_regex(**flags))
     # This might seem wasteful, but it does allow for the rebuilding of the
     # regex with different flags.
     if debug >= 2:
