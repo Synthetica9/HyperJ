@@ -1,0 +1,120 @@
+# Copyright 2015 Patrick Hilhorst
+#
+# This file is part of HyperJ.
+#
+# HyperJ is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# HyperJ is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with HyperJ.  If not, see <http://www.gnu.org/licenses/>.
+
+# HCPMRASE: Human Comprehensible Pattern Matching, Replacement And Side Effects
+# Overview:
+# * Lines starting with # are comments
+# * Indented lines belong to the pattern that comes above it
+# * {n} specifies an element of the string
+
+# I might move this to a package of its own, if it becomes too large
+
+# http://jsoftware.com/help/jforc/parsing_and_execution_ii.htm
+
+
+# 0 Monad
+assign|edge verb noun ?
+    output: APPLY MONAD {1} {2} {:monad_result}
+    type: {monad_result} noun
+    replace: {0} {monad_result} {3}
+
+# 1 Monad
+!conjunction verb verb noun
+    output: APPLY MONAD {2} {3} {:monad_result}
+    type: {monad_result} noun
+    replace: {0} {1} {monad_result}
+
+# 2 Dyad
+!conjunction noun verb noun
+    output: APPLY DYAD {2} {1} {3} {:dyad_result}
+    type: {dyad_result} noun
+    replace: {0} {dyad_result}
+
+# 3 Adverb
+!conjunction verb|noun adverb ?
+    output: APPLY ADVERB {2} {1} {:adverb_result}
+    type: {adverb_result} verb
+    replace: {0} {adverb_result} {3}
+
+# 4 Conjunction
+!conjunction verb|noun conjunction verb|noun
+    output: APPLY CONJUNCTION {2} {1} {3} {:conjunction_result}
+    type: {conjunction_result} verb
+    replace: {0} {conjunction_result}
+
+# 5 Fork
+!conjunction verb|noun verb verb
+    output: APPLY FORK {1} {2} {3} {:fork_result}
+    type: {fork_result} verb
+    replace: {0} {fork_result}
+
+#6
+# Line 6, defining hooks, is matched for any combination of CAVN CAVN except
+# N A and V A which are matched in line 3.  Only the combinations A A, C N,
+# C V, N C, V C, and V V are valid; the rest result in syntax errors.
+
+# 6.1
+assign|edge adverb adverb ?
+    output: APPLY ADVERB_HOOK {1} {2} {:adverb_hook_result}
+    type: {adverb_hook_result} adverb
+    replace: {0} {adverb_hook_result} {3}
+
+# 6.2
+assign|edge conjunction noun|verb ?
+    output: APPLY CONJUNCTION_RIGHT {1} {2} {:conjunction_partial_result}
+    type: {conjunction_partial_result} adverb
+    replace: {0} {conjunction_partial_result} {3}
+
+# 6.3
+assign|edge noun|verb conjunction ?
+    output: APPLY CONJUNCTION_LEFT {2} {1} {:conjunction_partial_result}
+    type: {conjunction_partial_result} adverb
+    replace: {0} {conjunction_partial_result} {3}
+
+# 6.4
+assign|edge verb verb ?
+    output: APPLY VERB_HOOK {1} {2} {:verb_hook_result}
+    type: {verb_hook_result} verb
+    replace: {0} {verb_hook_result} {3}
+
+# 7 Is
+
+# 7.1
+name assign conjunction ?
+    output: ASSIGN {1} {0} {2}
+    type: {0} conjunction
+    replace: {0} {3}
+
+# 7.2
+name assign adverb ?
+    output: ASSIGN {1} {0} {2}
+    type: {0} adverb
+    replace: {0} {3}
+
+# 7.3
+name assign verb ?
+    output: ASSIGN {1} {0} {2}
+    type: {0} verb
+    replace: {0} {3}
+
+# 7.4
+name assign noun ?
+    output: ASSIGN {1} {0} {2}
+    type: {0} adverb
+    replace: {0} {3}
+
+# 8 is handled elsewhere.

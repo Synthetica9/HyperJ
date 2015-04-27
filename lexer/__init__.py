@@ -61,6 +61,19 @@ def build_regex(**flags):
         print regular_chars
         print
 
+
+    # ===========================================================
+
+    re_comment = (r'NB\.'
+                  r'.*')
+    # If NB. is encountered, eat everything until eol.
+    if debug >= 3:
+        print 'Regex for comments:'
+        print re_comment
+        re.compile(re_comment, re_flags)
+        print
+
+    yield 'comment', re_comment
     # ===========================================================
 
     re_directive = r'@\.:[^)]*'
@@ -176,19 +189,6 @@ def build_regex(**flags):
         print
 
     yield 'item', re_alphanumeric_items
-
-    # ===========================================================
-
-    re_comment = (r'NB\.'
-                  r'.*')
-    # If NB. is encountered, eat everything until eol.
-    if debug >= 3:
-        print 'Regex for comments:'
-        print re_comment
-        re.compile(re_comment, re_flags)
-        print
-
-    yield 'comment', re_comment
 
 
 
