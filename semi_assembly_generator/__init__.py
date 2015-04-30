@@ -19,8 +19,16 @@ __author__ = 'Synthetica'
 
 import collections
 import string
+import itertools
+import json
+import re
 
+import lexer
 import tools
+from variablegenerator import VariableGenerator
+
+builtins_dict = json.load(tools.load_resource('items.json'))
+
 
 def build_pattern(fle, **flags):
     debug = flags['debug']
@@ -51,13 +59,118 @@ def build_pattern(fle, **flags):
 
     if debug >= 5:
         print 'pattern:'
-        print patterns
+        print {a: dict(b) for a, b in patterns.iteritems()}
+        print '(Note: this is not guaranteed to be in the right order)'
+        print
 
+    return patterns
+
+def match(pattern, to_match):
+    returnvalue = True
+    for i, j in itertools.izip_longest(pattern.split(), to_match,
+                                       fillvalue=''):
+        print repr(i), ':', repr(j), ':', match_single(i, j)
+        if not match_single(i, j):
+            returnvalue = False
+
+    return returnvalue
+
+def match_single(pattern, to_match):
+    if '|' in pattern:
+        return any(match_single(sub_pattern, to_match)
+                   for sub_pattern in pattern.split('|'))
+    elif pattern.startswith('!'):
+        return not match_single(pattern[1:], to_match)
+        # Remove ! and try again
+    elif pattern == '?':
+        return True  # Always matches
+    else:
+        if match_type(pattern, to_match):
+            return True
+
+#TODO: Bad globals
+typedict = {}
+
+def match_type(tpe, item):
+
+    if tpe == 'edge':
+        return item is None
+
+    if isinstance(item, basestring):
+        regular_match = any(re.match(pattern, item)
+                            for pattern_type, pattern in regexes
+                            if pattern_type == tpe)
+        if regular_match:
+            return True
+
+    if item in builtins_dict:
+        return tpe == builtins_dict[item]['type']
+
+    if item in typedict:
+        return tpe == typedict[item]
+
+    return False
 
 def single_op(lexed, **flags):
     debug = flags['debug']
+    generator = VariableGenerator()
+    formatter = string.Formatter()
+    output = []
+    global regexes  # TODO: bad practice, remove later.
+    regexes = list(lexer.build_regex(**flags))
+    if debug >= 5:
+        print 'regexes:'
+        print regexes
+        print
     fle = tools.load_resource('semi_assembly_generator/patterns.ptrn')
-    build_pattern(fle, **flags)
+    patterns = build_pattern(fle, **flags)
+    for line in lexed:
+        line = [None] + line + [None]
+        index_last = index_first = -1
+        while len(line) > 3:
+            for pattern, consequence in patterns.iteritems():
+                to_match = line[index_first:index_last]
+                matched = match(pattern, to_match)
+                print pattern, to_match, matched
+                print
+                if matched:
+                    for kind, action in consequence.iteritems():
+                        print kind, ':', action
+                        if kind == 'output':
+                            output.append(
+                                formatter.vformat(action, to_match, generator)
+                            )
+                        if kind == 'replace':
+                            replacement = formatter.vformat(
+                                action,
+                                to_match + [''],
+                                # Fix for ? at the end of a line matching
+                                # nothing (Intended behavior, but slightly
+                                # annoying in this case)
+                                generator).split()
+                            line = line[:index_first] + replacement + line[index_last:]
+                            if debug >= 6:
+                                print 'New line: '
+                                print line
+                                print
+                        if kind == 'type':
+                            to_handle = formatter.vformat(
+                                action,
+                                to_match,
+                                generator
+                            )
+                            key, value = to_handle.split(' ')
+                            typedict[key] = value
+
+                    index_last = index_first = -1
+                    break
+
+
+            else:
+                index_first -= 1
+                index_last = min(-1, index_first+4)
+    return output
+
 
 # http://jsoftware.com/help/jforc/parsing_and_execution_ii.htm
 # # TODO: account for monad literals

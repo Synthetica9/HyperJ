@@ -28,37 +28,37 @@
 
 # 0 Monad
 assign|edge verb noun ?
-    output: APPLY MONAD {1} {2} {:monad_result}
+    output: APPLY MONAD {1} {2} {@monad_result}
     type: {monad_result} noun
     replace: {0} {monad_result} {3}
 
 # 1 Monad
 !conjunction verb verb noun
-    output: APPLY MONAD {2} {3} {:monad_result}
+    output: APPLY MONAD {2} {3} {@monad_result}
     type: {monad_result} noun
     replace: {0} {1} {monad_result}
 
 # 2 Dyad
 !conjunction noun verb noun
-    output: APPLY DYAD {2} {1} {3} {:dyad_result}
+    output: APPLY DYAD {2} {1} {3} {@dyad_result}
     type: {dyad_result} noun
     replace: {0} {dyad_result}
 
 # 3 Adverb
 !conjunction verb|noun adverb ?
-    output: APPLY ADVERB {2} {1} {:adverb_result}
+    output: APPLY ADVERB {2} {1} {@adverb_result}
     type: {adverb_result} verb
     replace: {0} {adverb_result} {3}
 
 # 4 Conjunction
 !conjunction verb|noun conjunction verb|noun
-    output: APPLY CONJUNCTION {2} {1} {3} {:conjunction_result}
+    output: APPLY CONJUNCTION {2} {1} {3} {@conjunction_result}
     type: {conjunction_result} verb
     replace: {0} {conjunction_result}
 
 # 5 Fork
 !conjunction verb|noun verb verb
-    output: APPLY FORK {1} {2} {3} {:fork_result}
+    output: APPLY FORK {1} {2} {3} {@fork_result}
     type: {fork_result} verb
     replace: {0} {fork_result}
 
@@ -69,25 +69,25 @@ assign|edge verb noun ?
 
 # 6.1
 assign|edge adverb adverb ?
-    output: APPLY ADVERB_HOOK {1} {2} {:adverb_hook_result}
+    output: APPLY ADVERB_HOOK {1} {2} {@adverb_hook_result}
     type: {adverb_hook_result} adverb
     replace: {0} {adverb_hook_result} {3}
 
 # 6.2
 assign|edge conjunction noun|verb ?
-    output: APPLY CONJUNCTION_RIGHT {1} {2} {:conjunction_partial_result}
+    output: APPLY CONJUNCTION_RIGHT {1} {2} {@conjunction_partial_result}
     type: {conjunction_partial_result} adverb
     replace: {0} {conjunction_partial_result} {3}
 
 # 6.3
 assign|edge noun|verb conjunction ?
-    output: APPLY CONJUNCTION_LEFT {2} {1} {:conjunction_partial_result}
+    output: APPLY CONJUNCTION_LEFT {2} {1} {@conjunction_partial_result}
     type: {conjunction_partial_result} adverb
     replace: {0} {conjunction_partial_result} {3}
 
 # 6.4
 assign|edge verb verb ?
-    output: APPLY VERB_HOOK {1} {2} {:verb_hook_result}
+    output: APPLY VERB_HOOK {1} {2} {@verb_hook_result}
     type: {verb_hook_result} verb
     replace: {0} {verb_hook_result} {3}
 
@@ -114,7 +114,11 @@ name assign verb ?
 # 7.4
 name assign noun ?
     output: ASSIGN {1} {0} {2}
-    type: {0} adverb
+    type: {0} noun
     replace: {0} {3}
+
+edge noun ? ?
+    output: DISPLAY {1}
+    replace:
 
 # 8 is handled elsewhere.
